@@ -1,9 +1,9 @@
 use axum::{
+    Json, Router,
     extract::State,
     http::{HeaderValue, Method, StatusCode},
     response::{IntoResponse, Response},
     routing::post,
-    Json, Router,
 };
 use reqwest;
 use serde::{Deserialize, Serialize};
@@ -38,10 +38,9 @@ struct ResendPayload<'a> {
 
 #[tokio::main]
 async fn main() {
-   dotenvy::dotenv().ok();
+    dotenvy::dotenv().ok();
 
-    let resend_api_key =
-        env::var("RESEND_API_KEY").expect("RESEND_API_KEY must be set in .env");
+    let resend_api_key = env::var("RESEND_API_KEY").expect("RESEND_API_KEY must be set in .env");
     let to_email = env::var("TO_EMAIL").expect("TO_EMAIL must be set in .env");
     let from_email = env::var("FROM_EMAIL").expect("FROM_EMAIL must be set in .env");
     let frontend_url = env::var("FRONTEND_URL").expect("FRONTEND_URL must be set");
@@ -70,14 +69,10 @@ async fn main() {
         .layer(cors); // Apply the CORS middleware
 
     // Server Ronner
-    let port: u16 = env::var("PORT")
-        .unwrap_or_else(|_| "3001".to_string()) // Default to 3001 for local dev
-        .parse()
-        .expect("PORT must be a valid u16 number");
-
+    let port: u16 = 8080;
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     
-    println!("->> RUST BACKEND LISTENING on http://{}", addr);
+    println!("->> RUST BACKEND FORCING on http://{}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
@@ -87,7 +82,6 @@ async fn contact_handler(
     State(state): State<AppState>, // Extract the app state
     Json(payload): Json<ContactPayload>,
 ) -> Result<impl IntoResponse, AppError> {
-    
     println!("->> RECEIVED contact form submission: {:?}", payload);
 
     // Email formating
