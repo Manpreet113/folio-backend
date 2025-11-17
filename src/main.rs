@@ -1,6 +1,6 @@
 use axum::{
     extract::State,
-    http::StatusCode,
+    http::{HeaderValue, Method, StatusCode},
     response::{IntoResponse, Response},
     routing::post,
     Json, Router,
@@ -9,7 +9,7 @@ use reqwest;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::net::SocketAddr;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 
 // App configs, like API keys
 #[derive(Clone)]
@@ -38,12 +38,13 @@ struct ResendPayload<'a> {
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().expect("Failed to load .env file. Make sure it exists.");
+   dotenvy::dotenv().ok();
 
     let resend_api_key =
         env::var("RESEND_API_KEY").expect("RESEND_API_KEY must be set in .env");
     let to_email = env::var("TO_EMAIL").expect("TO_EMAIL must be set in .env");
     let from_email = env::var("FROM_EMAIL").expect("FROM_EMAIL must be set in .env");
+    let frontend_url = env::var("FRONTEND_URL").expect("FRONTEND_URL must be set");
 
     // Store keys in application state
     let app_state = AppState {
@@ -54,9 +55,13 @@ async fn main() {
 
     // CORS layer setup bkc
     let cors = CorsLayer::new()
-        .allow_origin(Any) 
-        .allow_methods(Any)
-        .allow_headers(Any);
+        .allow_origin(
+            frontend_url
+                .parse::<HeaderValue>()
+                .expect("FRONTEND_URL is not a valid HeaderValue"),
+        )
+        .allow_methods([Method::POST, Method::OPTIONS])
+        .allow_headers([axum::http::header::CONTENT_TYPE]);
 
     // Defining routes
     let app = Router::new()
@@ -65,7 +70,13 @@ async fn main() {
         .layer(cors); // Apply the CORS middleware
 
     // Server Ronner
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
+    let port: u16 = env::var("PORT")
+        .unwrap_or_else(|_| "3001".to_string()) // Default to 3001 for local dev
+        .parse()
+        .expect("PORT must be a valid u16 number");
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    
     println!("->> RUST BACKEND LISTENING on http://{}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
