@@ -1,9 +1,10 @@
-use axum::{routing::post, Router};
+use axum::{routing::post, routing::get, Router};
 use std::sync::Arc;
 use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
 use crate::config::AppState;
 
 mod contact;
+mod skills;
 
 pub fn create_router(state: Arc<AppState>) -> Router {
     // Rate Limit: Max 2 requests per 5 seconds per IP
@@ -15,6 +16,7 @@ pub fn create_router(state: Arc<AppState>) -> Router {
 
     Router::new()
         .route("/api/contact", post(contact::contact_handler))
+        .route("/api/skills", get(skills::get_skills))
         .layer(GovernorLayer {
             config: Arc::new(governor_conf),
         })

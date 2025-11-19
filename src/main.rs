@@ -2,13 +2,17 @@ mod config;
 mod error;
 mod models;
 mod routes;
+mod db;
 use tower_http::cors::{CorsLayer};
 use axum::http::{HeaderValue, Method};
 
 #[tokio::main]
 async fn main() {
+    // Initialize DB 
+    let pool = db::init_db().await;
+
     // Initialize Config
-    let state = config::AppState::new();
+    let state = config::AppState::new(pool);
 
     // Setup CORS 
     let cors = CorsLayer::new()
@@ -17,7 +21,7 @@ async fn main() {
                 .parse::<HeaderValue>()
                 .expect("Invalid FRONTEND_URL config")
         ) 
-        .allow_methods([Method::POST, Method::OPTIONS])
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::OPTIONS])
         .allow_headers([axum::http::header::CONTENT_TYPE]);
 
     // Build Router

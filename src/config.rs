@@ -1,5 +1,6 @@
 use std::env;
 use std::sync::Arc;
+use crate::db::DbPool;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -7,10 +8,11 @@ pub struct AppState {
     pub to_email: String,
     pub from_email: String,
     pub frontend_url: String,
+    pub db: DbPool,
 }
 
 impl AppState {
-    pub fn new() -> Arc<Self> {
+    pub fn new(db: DbPool) -> Arc<Self> {
         dotenvy::dotenv().ok();
 
         let resend_api_key = env::var("RESEND_API_KEY").expect("RESEND_API_KEY must be set");
@@ -23,6 +25,7 @@ impl AppState {
             to_email,
             from_email,
             frontend_url,
+            db,
         })
     }
 }

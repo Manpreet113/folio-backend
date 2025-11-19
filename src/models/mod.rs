@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+use sqlx::FromRow;
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct ContactPayload {
@@ -19,4 +20,13 @@ pub struct ResendPayload<'a> {
     pub to: &'a [&'a str],
     pub subject: String,
     pub html: String,
+}
+
+#[derive(Serialize, FromRow, Debug)]
+pub struct Skill {
+    pub id: i64,
+    pub name: String,
+    pub category: String,
+    pub status: String,
+    pub icon: Option<String>,
 }

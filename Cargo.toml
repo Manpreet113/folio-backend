@@ -14,3 +14,4 @@ tower-http = { version = "0.5.2", features = ["cors"] }
 html-escape = "0.2.13"
 validator = { version = "0.19", features = ["derive"] }
 tower_governor = "0.4"
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "sqlite"] }
