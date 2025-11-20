@@ -11,24 +11,24 @@ use crate::auth_middleware::auth_middleware;
 use axum::middleware;
 
 pub fn create_router(state: Arc<AppState>) -> Router {
-    // Rate limiting disabled - causes issues behind Railway proxy
-    // TODO: Re-implement with proper proxy header support
-    // let governor_conf = GovernorConfigBuilder::default()
-    //     .per_second(5)
-    //     .burst_size(2)
-    //     .finish()
-    //     .unwrap();
+    // Rate limiter configured for Railway proxy
+    let governor_conf = GovernorConfigBuilder::default()
+        .per_second(10)
+        .burst_size(5)
+        .use_headers()
+        .finish()
+        .unwrap();
 
     let protected_routes = Router::new()
         .route("/api/skills", post(content::create_skill))
         .route(
             "/api/skills/:id",
-            axum::routing::delete(content::delete_skill),
+            axum::routing::delete(content::delete_skill).put(content::update_skill),
         )
         .route("/api/projects", post(content::create_project))
         .route(
             "/api/projects/:id",
-            axum::routing::delete(content::delete_project),
+            axum::routing::delete(content::delete_project).put(content::update_project),
         )
         .layer(middleware::from_fn(auth_middleware));
 
@@ -41,8 +41,8 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     Router::new()
         .merge(public_routes)
         .merge(protected_routes)
-        // .layer(GovernorLayer {
-        //     config: Arc::new(governor_conf),
-        // })
+        .layer(GovernorLayer {
+            config: Arc::new(governor_conf),
+        })
         .with_state(state)
 }

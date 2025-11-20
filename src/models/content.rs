@@ -26,6 +26,15 @@ pub struct CreateSkillRequest {
     pub icon: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateSkillRequest {
+    #[validate(length(min = 1, message = "Name cannot be empty"))]
+    pub name: String,
+    pub category: String,
+    pub proficiency: String,
+    pub icon: Option<String>,
+}
+
 #[derive(Debug, Serialize, Deserialize, FromRow, Validate)]
 pub struct Project {
     #[serde(skip_deserializing)]
@@ -43,6 +52,17 @@ pub struct Project {
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateProjectRequest {
+    #[validate(length(min = 1, message = "Title cannot be empty"))]
+    pub title: String,
+    pub description: String,
+    pub tech_stack: Vec<String>,
+    pub image_url: Option<String>,
+    pub github_url: Option<String>,
+    pub demo_url: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateProjectRequest {
     #[validate(length(min = 1, message = "Title cannot be empty"))]
     pub title: String,
     pub description: String,
