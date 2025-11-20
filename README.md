@@ -1,43 +1,112 @@
-Small Rust backend using [axum](https://crates.io/crates/axum) that exposes a single endpoint to forward contact form submissions to the Resend API.
+# Portfolio Backend
 
-Overview
-- Source: [src/main.rs](src/main.rs) — implements the HTTP server and handlers:
-  - [`main`](src/main.rs)
-  - [`contact_handler`](src/main.rs)
-  - [`AppState`](src/main.rs)
-  - [`ResendPayload`](src/main.rs)
-  - [`AppError`](src/main.rs)
+Rust backend using [axum](https://crates.io/crates/axum) that provides:
+- **Contact form** endpoint forwarding to Resend API
+- **JWT authentication** with Argon2 password hashing
+- **CRUD APIs** for Skills and Projects
+- **PostgreSQL database** with SQLx migrations
 
-Prerequisites
+## Tech Stack
+
+- **Framework**: Axum 0.7
+- **Database**: PostgreSQL with SQLx
+- **Auth**: JWT + Argon2
+- **Email**: Resend API
+- **Deployment**: Railway
+
+## Project Structure
+
+```
+src/
+├── main.rs              # Server entry point
+├── config.rs            # App configuration
+├── db.rs                # Database connection
+├── error.rs             # Error handling
+├── auth_middleware.rs   # JWT middleware
+├── models/              # Data models
+│   ├── auth.rs
+│   └── content.rs
+└── routes/              # API endpoints
+    ├── auth.rs          # Login
+    ├── contact.rs       # Contact form
+    └── content.rs       # Skills & Projects CRUD
+```
+
+## Prerequisites
+
 - Rust toolchain (stable)
-- A Resend API key and a verified sender email
+- PostgreSQL database
+- Resend API key
 
-Setup
-1. Copy or update the [.env.example](.env.example) file with your values:
-   - RESEND_API_KEY
-   - FROM_EMAIL
-   - TO_EMAIL
+## Environment Variables
 
-Build & run
+Create a `.env` file with:
+
+```env
+DATABASE_URL="postgresql://user:password@host:5432/dbname"
+RESEND_API_KEY="re_..."
+FROM_EMAIL="Your Site <sender@domain.com>"
+TO_EMAIL="your-email@example.com"
+FRONTEND_URL="http://localhost:5173"
+JWT_SECRET="your-secret-key"
+```
+
+## Local Development
+
 ```sh
-# build
+# Install dependencies
 cargo build
 
-# run (development)
+# Run migrations
+cargo sqlx migrate run
+
+# Start server
 cargo run
 
-# run optimized
-cargo run --release
+# Server runs on http://localhost:3001
 ```
 
-Notes
-- Configuration is loaded via dotenvy from the [.env](.env) file.
-- CORS is enabled (open) via tower-http in [src/main.rs](src/main.rs).
-- The server listens on http://127.0.0.1:3001 and exposes POST /api/contact.
+## API Endpoints
 
-Example request
+### Public Endpoints
+- `GET /api/skills` - List all skills
+- `GET /api/projects` - List all projects
+- `POST /api/login` - Authenticate user
+- `POST /api/contact` - Send contact form
+
+### Protected Endpoints (require JWT)
+- `POST /api/skills` - Create skill
+- `DELETE /api/skills/:id` - Delete skill
+- `POST /api/projects` - Create project
+- `DELETE /api/projects/:id` - Delete project
+
+## Creating Admin User
+
+Generate password hash:
 ```sh
-curl -X POST http://127.0.0.1:3001/api/contact \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Alice","email":"alice@example.com","message":"Hello!"}'
+cargo run --bin hash_password "your-password"
 ```
+
+Then insert into database:
+```sql
+INSERT INTO users (username, password_hash) 
+VALUES ('admin', '$argon2id$...');
+```
+
+## Deployment
+
+Deployed on Railway with automatic migrations on startup.
+
+**Railway Environment Variables:**
+- `DATABASE_URL` (auto-configured)
+- `RESEND_API_KEY`
+- `FROM_EMAIL`
+- `TO_EMAIL`
+- `FRONTEND_URL` (production: `https://manpreet.tech`)
+- `JWT_SECRET`
+
+## Notes
+
+- CORS configured for production frontend
+- Rate limiting disabled for Railway proxy compatibility
+- Migrations run automatically on server start
