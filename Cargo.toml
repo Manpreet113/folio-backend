@@ -14,4 +14,8 @@ tower-http = { version = "0.5.2", features = ["cors"] }
 html-escape = "0.2.13"
 validator = { version = "0.19", features = ["derive"] }
 tower_governor = "0.4"
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "sqlite"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "uuid", "chrono"] }
+argon2 = "0.5"
+jsonwebtoken = "9"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["serde", "v4"] }
