@@ -11,12 +11,13 @@ use crate::auth_middleware::auth_middleware;
 use axum::middleware;
 
 pub fn create_router(state: Arc<AppState>) -> Router {
-    // Rate Limit: Max 2 requests per 5 seconds per IP
-    let governor_conf = GovernorConfigBuilder::default()
-        .per_second(5)
-        .burst_size(2)
-        .finish()
-        .unwrap();
+    // Rate limiting disabled - causes issues behind Railway proxy
+    // TODO: Re-implement with proper proxy header support
+    // let governor_conf = GovernorConfigBuilder::default()
+    //     .per_second(5)
+    //     .burst_size(2)
+    //     .finish()
+    //     .unwrap();
 
     let protected_routes = Router::new()
         .route("/api/skills", post(content::create_skill))
@@ -40,8 +41,8 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     Router::new()
         .merge(public_routes)
         .merge(protected_routes)
-        .layer(GovernorLayer {
-            config: Arc::new(governor_conf),
-        })
+        // .layer(GovernorLayer {
+        //     config: Arc::new(governor_conf),
+        // })
         .with_state(state)
 }

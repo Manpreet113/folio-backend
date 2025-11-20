@@ -1,13 +1,14 @@
--- Seed Skills
+-- Seed Skills (idempotent - won't fail if data already exists)
 INSERT INTO skills (name, category, proficiency, icon) VALUES
 ('Python', 'Backend scripting, data structures, automation', 'Intermediate', 'Code2'),
 ('Rust', 'Systems programming, memory safety, performance', 'Learning', 'Boxes'),
 ('Web Development', 'TypeScript, React, Astro, Tailwind CSS', 'Intermediate', 'Globe'),
 ('Git & Version Control', 'GitHub workflows, branching strategies, collaboration', 'Intermediate', 'GitBranch'),
 ('Linux & Terminal', 'Command line proficiency, shell scripting, system tools', 'Intermediate', 'Terminal'),
-('Backend Concepts', 'APIs, databases, server-side architecture', 'Learning', 'Database');
+('Backend Concepts', 'APIs, databases, server-side architecture', 'Learning', 'Database')
+ON CONFLICT DO NOTHING;
 
--- Seed Projects
+-- Seed Projects (idempotent - won't fail if data already exists)
 INSERT INTO projects (title, description, tech_stack, github_url, demo_url) VALUES
 (
     'Terminal Portfolio Site', 
@@ -36,4 +37,6 @@ INSERT INTO projects (title, description, tech_stack, github_url, demo_url) VALU
     ARRAY['Rust', 'Systems Programming'],
     '#',
     NULL
-);
+)
+ON CONFLICT DO NOTHING;
+
