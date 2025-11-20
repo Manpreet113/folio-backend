@@ -10,6 +10,8 @@ use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() {
+    dotenvy::dotenv().ok();
+
     // Initialize DB
     let pool = db::init_db().await;
 
@@ -18,6 +20,7 @@ async fn main() {
 
     // Setup CORS
     let cors = CorsLayer::new()
+
         .allow_origin(
             state
                 .frontend_url
