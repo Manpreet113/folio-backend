@@ -20,7 +20,6 @@ async fn main() {
 
     // Setup CORS
     let cors = CorsLayer::new()
-
         .allow_origin(
             state
                 .frontend_url
@@ -45,5 +44,10 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
 
     println!("->> SERVER RUNNING on {}", addr);
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }

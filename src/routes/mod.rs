@@ -15,6 +15,7 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     let governor_conf = GovernorConfigBuilder::default()
         .per_second(10)
         .burst_size(5)
+        .use_headers()
         .finish()
         .unwrap();
 
